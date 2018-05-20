@@ -4,7 +4,7 @@ import moment from 'moment';
 import RoundButton  from './RoundButton';
 import { styles } from './styles';
 
-export default function InputInterval({ interval, style, label }) {
+export default function InputInterval({ minutes, seconds, style, label, setInterval }) {
   const pad = (n) => n < 10 ? '0' + n : n;  
 
   const timeOptions = [];
@@ -16,15 +16,12 @@ export default function InputInterval({ interval, style, label }) {
     <View style={styles.timerContainer}>
       <Text style={style}>{label}</Text>
       <Picker
-        selectedValue={33}//this.state.runMinutes}
-        style={{ height: 35, width: 30, backgroundColor: '#999999' }}
+        selectedValue={minutes}
+        style={{ height: 35, width: 35, backgroundColor: '#999999' }}
         onValueChange={
-          (itemValue, itemIndex) => 
-            this.setState(
-              {
-                runMinutes: itemValue
-              }
-          )
+          (itemValue, itemIndex) => {
+            setInterval(label, 'Minutes', itemValue)
+          }
         }
       >
         {timeOptions.map((option, index) => (
@@ -40,17 +37,22 @@ export default function InputInterval({ interval, style, label }) {
       <Text style={{ color: 'black' }}>:</Text>
       <Text>&nbsp;&nbsp;&nbsp;</Text>
       <Picker
-        selectedValue={0}
-        style={{ height: 35, width: 30, backgroundColor: '#999999' }}
+        selectedValue={seconds}
+        style={{ height: 35, width: 35, backgroundColor: '#999999' }}
         onValueChange={
-          (itemValue, itemIndex) => 
-            this.setState(
-              {
-                runSeconds: itemValue
-              }
-          )
+          (itemValue, itemIndex) => {
+            setInterval(label, 'Seconds', itemValue)
+          }
         }
       >
+        {timeOptions.map((option, index) => (
+            <Picker.Item
+              label={`${option}`}
+              key={option}
+              value={option}
+            />
+          ))
+        }
       </Picker>
     </View>
   );
