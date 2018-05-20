@@ -11,9 +11,27 @@ export default function Timer({ interval, style, label }) {
 
   return (
     <View style={styles.timerContainer}>
-      <Text style={style}>{label}</Text>
-      <Text style={style}>{pad(duration.minutes())}:</Text>
-      <Text style={style}>{pad(duration.seconds())}</Text>
+      <Text 
+        style={{ 
+          height: 60, 
+          width: 120, 
+          color: 'white', 
+          fontSize: 25, 
+          fontWeight: 'normal', 
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+        }}>
+        {label}
+      </Text>
+      <Text style={{ height: 60, width: 50, color: 'white', fontSize: 40, fontWeight: '200', }}>
+        {pad(duration.minutes())}
+      </Text>
+      <Text>&nbsp;&nbsp;&nbsp;</Text>
+      <Text style={{ color: 'white', fontSize: 40, fontWeight: '200', }}>:</Text>
+      <Text>&nbsp;&nbsp;&nbsp;</Text>
+      <Text style={{ height: 60, width: 50, color: 'white', fontSize: 40, fontWeight: '200', }}>
+        {pad(duration.seconds())}
+      </Text>
     </View>
   );
 }

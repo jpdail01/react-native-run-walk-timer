@@ -11,15 +11,13 @@ export default function InputInterval({ interval, style, label }) {
   for (let index = 0; index < 60; index++) {
     timeOptions.push(index);    
   }
-  //timeOptions.fill(0, 0, 59);
-  //timeOptions.from(timeOptions, x => x + 1);
 
   return (
     <View style={styles.timerContainer}>
       <Text style={style}>{label}</Text>
       <Picker
-        selectedValue={4}//this.state.runMinutes}
-        style={{ height: 35, width: 50, backgroundColor: 'grey' }}
+        selectedValue={33}//this.state.runMinutes}
+        style={{ height: 35, width: 30, backgroundColor: '#999999' }}
         onValueChange={
           (itemValue, itemIndex) => 
             this.setState(
@@ -39,11 +37,11 @@ export default function InputInterval({ interval, style, label }) {
         }
       </Picker>
       <Text>&nbsp;&nbsp;&nbsp;</Text>
-      <Text style={{ color: 'white' }}>:</Text>
+      <Text style={{ color: 'black' }}>:</Text>
       <Text>&nbsp;&nbsp;&nbsp;</Text>
       <Picker
         selectedValue={0}
-        style={{ height: 35, width: 50, backgroundColor: 'gray' }}
+        style={{ height: 35, width: 30, backgroundColor: '#999999' }}
         onValueChange={
           (itemValue, itemIndex) => 
             this.setState(

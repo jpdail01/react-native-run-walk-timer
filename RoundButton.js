@@ -9,7 +9,7 @@ export default function RoundButton({ title, color, background, onPress, disable
       style={[ styles.button, { backgroundColor: background }]}
       activeOpacity={disabled ? 1.0 : 0.7}
     >
-      <View style={styles.buttonBorder}>
+      <View>{/*  style={styles.buttonBorder}> */}
         <Text style={[ styles.buttonTitle, { color }]}>{title}</Text>
       </View>
     </TouchableOpacity>

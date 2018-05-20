@@ -4,51 +4,53 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-nati
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: '#ffcc33', // '#F37349', // '#7BB632', //'#F57016', // '#F37349'
     alignItems: 'flex-start',
-    paddingTop: 130,
+    paddingTop: 80,
     paddingHorizontal: 20,
   },
   elapsed: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '200',
-    width: 150,
-  },
-  currentSegment: {
-    color: 'lightblue',
     fontSize: 25,
     fontWeight: '200',
-    width: 110,
+    alignItems: 'center',
+    width: 130,
+  },
+  currentSegment: {
+    color: '#FFFFFF',
+    fontSize: 25,
+    fontWeight: '200',
+    alignItems: 'flex-start',
+    width: 130,
   },
   run: {
-    color: 'orange',
+    color: 'red', // '#F57016',
     fontSize: 20,
     fontWeight: '200',
-    width: 100,
+    width: 150,
   },
   walk: {
     color: 'green',
     fontSize: 20,
     fontWeight: '200',
-    width: 110,
+    width: 150,
   },
   goal: {
-    color: 'cornflowerblue',
+    color: '#000000',
     fontSize: 20,
     fontWeight: '200',
-    width: 110,
+    width: 150,
   },
   setIntervals: {
     color: 'white',
     fontSize: 20,
     fontWeight: '200',
-    //width: 110,
+    width: 300,
   },
   button: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 180,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -67,7 +69,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'stretch',
     justifyContent: 'space-between',
-    marginTop: 80,
+    marginTop: 30,
     marginBottom: 30,
   },
   lapText: {
@@ -95,5 +97,8 @@ export const styles = StyleSheet.create({
   },
   timerContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    flex: 1,
+    width: 200,
   }
 })

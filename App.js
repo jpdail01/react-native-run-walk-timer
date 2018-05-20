@@ -8,6 +8,7 @@ import ButtonsRow from './ButtonsRow';
 import Lap from './Lap';
 import LapsTable from './LapsTable';
 import { styles } from './styles';
+//import Tts from 'react-native-tts';
 
 export default class App extends Component {
   constructor(props) {
@@ -23,6 +24,7 @@ export default class App extends Component {
       goalMinutes: 1800,
       goalSeconds: 0,
       segments: [ ],
+      currentLabel: 'WALK'
     };
   }
 
@@ -74,7 +76,7 @@ export default class App extends Component {
     }
   }
 
-  stop = () => {
+  pause = () => {
     clearInterval(this.timer);
     const { 
       now, 
@@ -97,6 +99,8 @@ export default class App extends Component {
   }
   
   resume = () => {
+    //Tts.speak('Hello, world!');
+
     const now = new Date().getTime();
 
     this.setState({
@@ -125,9 +129,15 @@ export default class App extends Component {
     const timer = now - start;
 
     return (
-      <View style={styles.container}>
+      <View style={{ 
+        flex: 1, 
+        backgroundColor: this.state.currentLabel === 'WALK' ? '#7BB632' : '#ff9933', // '#ffcc33', // '#F37349', // '#7BB632', //'#F57016', // '#F37349'
+        alignItems: 'flex-start',
+        paddingTop: 80,
+        paddingHorizontal: 20,
+      }}>
         <Timer
-          label="Current"
+          label={this.state.currentLabel}
           interval={segments.reduce((total, curr) => total + curr, 0) + timer}
           style={styles.currentSegment}
         />
@@ -136,8 +146,9 @@ export default class App extends Component {
           interval={timer}
           style={styles.elapsed}
         />
-        <Text>{"\n"}{"\n"}</Text>
-        <Text style={styles.setIntervals}>Set Intervals</Text>
+        <Text>{"\n"}</Text>
+        <Text style={styles.setIntervals}>Set Your Intervals</Text>
+        <Text>{"\n"}</Text>
         <InputInterval
           label="Run"
           interval={(runMinutes * 60) + runSeconds}
@@ -156,9 +167,9 @@ export default class App extends Component {
         {segments.length === 0 && (
           <ButtonsRow>
             <RoundButton
-              title='GO!'
-              color='#50D167'
-              background='#1B361F'
+              title='Start'
+              color='white' // '#50D167'
+              background= 'green' // '#1B361F'
               onPress={this.start}
             />
           </ButtonsRow>
@@ -166,10 +177,10 @@ export default class App extends Component {
         {start > 0 && (
           <ButtonsRow>
             <RoundButton
-              title='Stop'
-              color='#E33935'
-              background='#3C1715'
-              onPress={this.stop}
+              title='Pause ||'
+              color='#FFFFFF'
+              background='#990000'
+              onPress={this.pause}
             />
           </ButtonsRow>
         )}
@@ -182,9 +193,9 @@ export default class App extends Component {
               onPress={this.reset}
             />
             <RoundButton
-              title='GO!'
-              color='#50D167'
-              background='#1B361F'
+              title='Resume'
+              color='black' // '#50D167'
+              background='#ffcc33' // '#1B361F'
               onPress={this.resume}
             />
           </ButtonsRow>
