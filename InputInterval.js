@@ -4,12 +4,12 @@ import moment from 'moment';
 import RoundButton  from './RoundButton';
 import { styles } from './styles';
 
-export default function InputInterval({ minutes, seconds, style, label, setInterval }) {
+export default function InputInterval({ minutes, seconds, style, label, setSegments }) {
   const pad = (n) => n < 10 ? '0' + n : n;  
 
   const timeOptions = [];
   for (let index = 0; index < 60; index++) {
-    timeOptions.push(index);    
+    timeOptions.push(index);
   }
 
   return (
@@ -20,13 +20,13 @@ export default function InputInterval({ minutes, seconds, style, label, setInter
         style={{ height: 35, width: 35, backgroundColor: '#999999' }}
         onValueChange={
           (itemValue, itemIndex) => {
-            setInterval(label, 'Minutes', itemValue)
+            setSegments(label, 'Minutes', itemValue)
           }
         }
       >
         {timeOptions.map((option, index) => (
             <Picker.Item
-              label={`${option}`}
+              label={`${pad(option)}`}
               key={option}
               value={option}
             />
@@ -41,13 +41,13 @@ export default function InputInterval({ minutes, seconds, style, label, setInter
         style={{ height: 35, width: 35, backgroundColor: '#999999' }}
         onValueChange={
           (itemValue, itemIndex) => {
-            setInterval(label, 'Seconds', itemValue)
+            setSegments(label, 'Seconds', itemValue)
           }
         }
       >
         {timeOptions.map((option, index) => (
             <Picker.Item
-              label={`${option}`}
+              label={`${pad(option)}`}
               key={option}
               value={option}
             />

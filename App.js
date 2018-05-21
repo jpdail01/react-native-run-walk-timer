@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import moment from 'moment';
 import RoundButton  from './RoundButton';
 import Timer from './Timer';
@@ -13,119 +13,202 @@ export default class App extends Component {
   constructor(props) {
     super(props);
 
+    this.timerUp = 0;
+    this.timerDown = 0;
+    this.startTimer = this.startTimer.bind(this);
+    this.countDown = this.countDown.bind(this);
+    this.countUp = this.countUp.bind(this);
+
     this.state = {
       start: 0,
       now: 0,
-      runMinutes: 4,
-      runSeconds: 0,
-      walkMinutes: 1,
-      walkSeconds: 0,
-      goalMinutes: 30,
+      runMinutes: 0,
+      runSeconds: 10,
+      walkMinutes: 0,
+      walkSeconds: 10,
+      goalMinutes: 1,
       goalSeconds: 0,
       segments: [ ],
-      currentLabel: 'WALK',
+      currentLabel: 'RUN',
+      segmentIndex: 0,
+      countUpTime: {}, 
+      countDownTime: {}, 
+      secondsUp: 0,
+      secondsDown: 20,
     };
   }
 
   componentWillUnmount() {
-    clearInterval(this.timer);
+    clearInterval(this.timerUp);
+    clearInterval(this.timerDown);
   }
 
   componentDidMount(){
-    this.setSegments();
+    this.setSegments('Run', 'Minutes', 0);
+
+    //let timeLeftVar = this.secondsToTime(this.state.secondsDown);
+    this.setState({ countDownTime: 0, countUpTime: 0 });
   }
 
-  start = () => {
-    const now = new Date().getTime();
+  startTimer() {
+    if (this.timerUp == 0) {
+      this.timerUp = setInterval(this.countUp, 1000);
+    }
+
+    if (this.timerDown == 0) {
+      this.timerDown = setInterval(this.countDown, 1000);
+    }
+  }
+
+  countUp() {
+    let seconds = this.state.secondsUp + 1;
+    this.setState({
+      countUpTime: this.secondsToTime(seconds),
+      secondsUp: seconds,
+    });
+    
+    // Check if done
+    const goal = (this.state.goalMinutes * 60) + this.state.goalSeconds;
+    if (seconds === goal) { 
+      clearInterval(this.timerUp);
+      this.timerUp = 0;
+
+      Alert.alert(
+        'Workout Complete!',
+        'Way to go!',
+        [
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        { cancelable: false }
+      )
+    }
+  }
+
+  countDown() {
+    let seconds = this.state.secondsDown - 1;    
 
     this.setState({
-      start: now,
-      now
+      countDownTime: this.secondsToTime(seconds),
+      secondsDown: seconds,
     });
 
-    this.timer = setInterval(() => {
-      this.setState({ now: new Date().getTime()})
-    }, 100);
-
-  }
-  
-  setSegments = () => {
-    const { 
-      segments, runMinutes, runSeconds, walkMinutes, walkSeconds, goalMinutes, goalSeconds 
-    } = this.state;
-    const goal = (goalMinutes * 60) + goalSeconds;
-    const run = (runMinutes * 60) + runSeconds;
-    const walk = (walkMinutes * 60) + walkSeconds;
-    const numberOfSegments = goal / (run + walk);
-    const areSegmentsEven = goal % (run + walk) === 0 ? true : false;
-    let newSegments = [];
-
-    if(areSegmentsEven){
-      for (let i = 1; i <= numberOfSegments; i++) {
-        newSegments.push(run);
-        newSegments.push(walk);        
-      }
+    if (seconds == 0) { 
+      clearInterval(this.timerDown);
+      clearInterval(this.timerUp);
 
       this.setState({
-        segments: newSegments
+        segmentIndex: this.state.segmentIndex + 1
+      }, () => {});
+
+      if(this.state.segments.length - 1 < this.state.segmentIndex){
+        return;
+      }
+
+      this.state.currentLabel === 'WALK' 
+      ? 
+      this.setState({
+        currentLabel: 'RUN',
+      }, () => {}) 
+      : 
+      this.setState({
+        currentLabel: 'WALK',
+      }, () => {});
+    
+      seconds = this.state.segments[this.state.segmentIndex];
+      this.setState({
+        countDownTime: this.secondsToTime(seconds),
+        secondsDown: seconds,
       });
+
+      this.timerDown = setInterval(this.countDown, 1000);
+      this.timerUp = setInterval(this.countUp, 1000);
     }
-    else {
-      // TODO: throw ERROR!!!
-    }
+  }
+
+  secondsToTime(secs){
+    let hours = Math.floor(secs / (60 * 60));
+
+    let divisor_for_minutes = secs % (60 * 60);
+    let minutes = Math.floor(divisor_for_minutes / 60);
+
+    let divisor_for_seconds = divisor_for_minutes % 60;
+    let seconds = Math.ceil(divisor_for_seconds);
+
+    let obj = {
+      "h": hours,
+      "m": minutes,
+      "s": seconds
+    };
+    return obj;
+  }
+
+  setSegments = (type, value, duration) => {
+    clearInterval(this.timerUp);
+    clearInterval(this.timerdown);
+
+    this.setState({
+      [type.toLowerCase() + value]: duration
+    }, 
+    () =>     
+    {
+      const { 
+        segments, runMinutes, runSeconds, walkMinutes, walkSeconds, goalMinutes, goalSeconds 
+      } = this.state;
+      const goal = (goalMinutes * 60) + goalSeconds;
+      const run = (runMinutes * 60) + runSeconds;
+      const walk = (walkMinutes * 60) + walkSeconds;
+      const numberOfSegments = goal / (run + walk);
+      const areSegmentsEven = goal % (run + walk) === 0 ? true : false;
+      let newSegments = [];
+
+      if(areSegmentsEven){
+        for (let i = 1; i <= numberOfSegments; i++) {
+          newSegments.push(run);
+          newSegments.push(walk);        
+        }
+
+        this.setState({
+          [type.toLowerCase() + value]: duration,
+          segments: newSegments,
+          secondsDown: newSegments[0],
+          secondsUp: 0,
+          segmentIndex: 0,
+          start: 0,
+          now: 0,
+          currentLabel: 'RUN',
+        }, () => {});
+      }
+      else {
+        Alert.alert(
+          'Run/Walk Intervals',
+          'Your Run/Walk Intervals must add up to your Total Workout',
+          [
+            {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+            {text: 'OK', onPress: () => console.log('OK Pressed')},
+          ],
+          { cancelable: true }
+        )
+      }
+    });
   }
 
   pause = () => {
-    clearInterval(this.timer);
-    const { 
-      now, 
-      start 
-    } = this.state;
-
-    this.setState({
-      //start: 0,
-      //now: 0,
-    });
-
+    clearInterval(this.timerDown);
+    clearInterval(this.timerUp);
   }
 
   reset = () => {
     this.setState({
-      start: 0,
-      now: 0,
+      segmentIndex: 0,
+      countDownTime: 0,
+      countUpTime: 0,
     });
 
   }
   
   resume = () => {
-    // Tts.speak('Hello, world!');
-
-    const now = new Date().getTime();
-
-    this.setState({
-      start: now,
-      now,
-    });
-
-    this.timer = setInterval(() => {
-      this.setState({ now: new Date().getTime()})
-    }, 100);
-
-  }
-
-  setInterval(type, value, duration) {
-    console.log('type:  ' + type);
-    console.log('value:  ' + value);
-    console.log('duration:  ' + duration);
-
-    /*
-    runMinutes: 4,
-      runSeconds: 0,
-      walkMinutes: 1,
-      walkSeconds: 0,
-      goalMinutes: 30,
-      goalSeconds: 0,
-    */
+    this.timerDown = setInterval(this.countDown, 1000);
+    this.timerUp = setInterval(this.countUp, 1000);
   }
 
   render() {
@@ -139,26 +222,28 @@ export default class App extends Component {
       walkSeconds,
       goalMinutes,
       goalSeconds,
+      segmentIndex,
     } = this.state;
-    const timer = now - start;
+    const timerUp = now - start;
+    const timerDown = now - start;
 
     return (
       <View style={{ 
         flex: 1, 
-        backgroundColor: this.state.currentLabel === 'WALK' ? '#7BB632' : '#ff9933', // '#ffcc33', // '#F37349', // '#7BB632', //'#F57016', // '#F37349'
+        backgroundColor: this.state.currentLabel === 'WALK' ? '#04A2D2' : '#ff9933', // '#ffcc33', // '#F37349', // '#7BB632', //'#F57016', // '#F37349'
         alignItems: 'flex-start',
         paddingTop: 80,
         paddingHorizontal: 20,
       }}>
         <Timer
           label={this.state.currentLabel}
-          interval={timer}
-          // {segments.reduce((total, curr) => total + curr, 0) + timer}
+          interval={this.state.countDownTime}
+          // {segments.reduce((total, curr) => total + curr, 0) + timerDown}
           style={styles.currentSegment}
         />
         <Timer
           label="Elapsed"
-          interval={timer}
+          interval={this.state.countUpTime}
           style={styles.elapsed}
         />
         <Text>{"\n"}</Text>
@@ -169,43 +254,43 @@ export default class App extends Component {
           minutes={runMinutes}
           seconds={runSeconds}
           style={styles.run}
-          setInterval={this.setInterval}
+          setSegments={this.setSegments}
         />
         <InputInterval
           label="Walk"
           minutes={walkMinutes}
           seconds={walkSeconds}
           style={styles.walk}
-          setInterval={this.setInterval}
+          setSegments={this.setSegments}
         />
         <InputInterval
-          label="Total Workout"
+          label="Goal"
           minutes={goalMinutes}
           seconds={goalSeconds}
           style={styles.goal}
-          setInterval={this.setInterval}
+          setSegments={this.setSegments}
         />
-        {start === 0 && (
+        {timerUp === 0 && (
           <ButtonsRow>
             <RoundButton
               title='Start'
               color='white' // '#50D167'
-              background= 'green' // '#1B361F'
-              onPress={this.start}
+              background= '#7BB632' // '#1B361F'
+              onPress={this.startTimer}
             />
           </ButtonsRow>
         )}
-        {start > 0 && (
+        {timerUp > 0 && (
           <ButtonsRow>
             <RoundButton
               title='Pause'
               color='#FFFFFF'
-              background='#990000'
+              background='#3D3D3D'
               onPress={this.pause}
             />
           </ButtonsRow>
         )}
-        {timer > 0 && start === 0 && (
+        {timerUp > 0 && start === 0 && (
           <ButtonsRow>
             <RoundButton
               title='Reset'
