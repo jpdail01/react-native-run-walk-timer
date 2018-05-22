@@ -35,6 +35,7 @@ export default class App extends Component {
       countDownTime: {}, 
       secondsUp: 0,
       secondsDown: 20,
+      status: 'stopped',
     };
   }
 
@@ -45,8 +46,6 @@ export default class App extends Component {
 
   componentDidMount(){
     this.setSegments('Run', 'Minutes', 0);
-
-    //let timeLeftVar = this.secondsToTime(this.state.secondsDown);
     this.setState({ countDownTime: 0, countUpTime: 0 });
   }
 
@@ -58,6 +57,9 @@ export default class App extends Component {
     if (this.timerDown == 0) {
       this.timerDown = setInterval(this.countDown, 1000);
     }
+    this.setState({
+      status: 'started'
+    }, () => {});
   }
 
   countUp() {
@@ -81,6 +83,10 @@ export default class App extends Component {
         ],
         { cancelable: false }
       )
+
+      this.setState({
+        status: 'paused'
+      }, () => {});
     }
   }
 
@@ -94,7 +100,7 @@ export default class App extends Component {
 
     if (seconds == 0) { 
       clearInterval(this.timerDown);
-      clearInterval(this.timerUp);
+      //clearInterval(this.timerUp);
 
       this.setState({
         segmentIndex: this.state.segmentIndex + 1
@@ -121,7 +127,7 @@ export default class App extends Component {
       });
 
       this.timerDown = setInterval(this.countDown, 1000);
-      this.timerUp = setInterval(this.countUp, 1000);
+      //this.timerUp = setInterval(this.countUp, 1000);
     }
   }
 
@@ -146,69 +152,83 @@ export default class App extends Component {
     clearInterval(this.timerUp);
     clearInterval(this.timerdown);
 
+    if(type === 'Total Workout') type = 'goal';
     this.setState({
       [type.toLowerCase() + value]: duration
-    }, 
-    () =>     
-    {
-      const { 
-        segments, runMinutes, runSeconds, walkMinutes, walkSeconds, goalMinutes, goalSeconds 
-      } = this.state;
-      const goal = (goalMinutes * 60) + goalSeconds;
-      const run = (runMinutes * 60) + runSeconds;
-      const walk = (walkMinutes * 60) + walkSeconds;
-      const numberOfSegments = goal / (run + walk);
-      const areSegmentsEven = goal % (run + walk) === 0 ? true : false;
-      let newSegments = [];
+    }, () => {});
 
-      if(areSegmentsEven){
-        for (let i = 1; i <= numberOfSegments; i++) {
-          newSegments.push(run);
-          newSegments.push(walk);        
-        }
+    const { 
+      segments, runMinutes, runSeconds, walkMinutes, walkSeconds, goalMinutes, goalSeconds 
+    } = this.state;
+    const goal = (goalMinutes * 60) + goalSeconds;
+    const run = (runMinutes * 60) + runSeconds;
+    const walk = (walkMinutes * 60) + walkSeconds;
+    const numberOfSegments = goal / (run + walk);
+    const areSegmentsEven = goal % (run + walk) === 0 ? true : false;
+    let newSegments = [];
 
-        this.setState({
-          [type.toLowerCase() + value]: duration,
-          segments: newSegments,
-          secondsDown: newSegments[0],
-          secondsUp: 0,
-          segmentIndex: 0,
-          start: 0,
-          now: 0,
-          currentLabel: 'RUN',
-        }, () => {});
+    if(areSegmentsEven){
+      for (let i = 1; i <= numberOfSegments; i++) {
+        newSegments.push(run);
+        newSegments.push(walk);        
       }
-      else {
-        Alert.alert(
-          'Run/Walk Intervals',
-          'Your Run/Walk Intervals must add up to your Total Workout',
-          [
-            {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-            {text: 'OK', onPress: () => console.log('OK Pressed')},
-          ],
-          { cancelable: true }
-        )
-      }
-    });
+
+      this.setState({
+        segments: newSegments,
+        secondsDown: newSegments[0],
+        secondsUp: 0,
+        segmentIndex: 0,
+        start: 0,
+        now: 0,
+        currentLabel: 'RUN',
+      }, () => {});
+    }
+    else {
+      Alert.alert(
+        'Run/Walk Intervals',
+        'Your Run/Walk Intervals must add up to your Total Workout',
+        [
+          {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        { cancelable: true }
+      )
+    }
   }
 
   pause = () => {
     clearInterval(this.timerDown);
     clearInterval(this.timerUp);
+
+    this.setState({
+      status: 'paused'
+    }, () => {});
   }
 
   reset = () => {
+    this.timerUp = 0;
+    this.timerDown = 0;
+
     this.setState({
       segmentIndex: 0,
-      countDownTime: 0,
-      countUpTime: 0,
-    });
+      start: 0,
+      now: 0,
+      currentLabel: 'RUN',
+      countUpTime: 0, 
+      countDownTime: 0, 
+      status: 'stopped',
+    }, () => {});
 
+    // this.setSegments('Run', 'Minutes', this.state.runMinutes);
   }
   
   resume = () => {
     this.timerDown = setInterval(this.countDown, 1000);
     this.timerUp = setInterval(this.countUp, 1000);
+
+    this.setState({
+      status: 'started'
+    }, () => {});
   }
 
   render() {
@@ -238,7 +258,6 @@ export default class App extends Component {
         <Timer
           label={this.state.currentLabel}
           interval={this.state.countDownTime}
-          // {segments.reduce((total, curr) => total + curr, 0) + timerDown}
           style={styles.currentSegment}
         />
         <Timer
@@ -264,13 +283,13 @@ export default class App extends Component {
           setSegments={this.setSegments}
         />
         <InputInterval
-          label="Goal"
+          label="Total Workout"
           minutes={goalMinutes}
           seconds={goalSeconds}
           style={styles.goal}
           setSegments={this.setSegments}
         />
-        {timerUp === 0 && (
+        {this.state.status === 'stopped' && (
           <ButtonsRow>
             <RoundButton
               title='Start'
@@ -280,7 +299,7 @@ export default class App extends Component {
             />
           </ButtonsRow>
         )}
-        {timerUp > 0 && (
+        {this.state.status === 'started' && (
           <ButtonsRow>
             <RoundButton
               title='Pause'
@@ -290,19 +309,19 @@ export default class App extends Component {
             />
           </ButtonsRow>
         )}
-        {timerUp > 0 && start === 0 && (
-          <ButtonsRow>
-            <RoundButton
-              title='Reset'
-              color='#FFFFFF'
-              background='#3D3D3D'
-              onPress={this.reset}
-            />
+        {this.state.status === 'paused' && (
+          <ButtonsRow>            
             <RoundButton
               title='Resume'
               color='black' // '#50D167'
               background='#ffcc33' // '#1B361F'
               onPress={this.resume}
+            />
+            <RoundButton
+              title='Reset'
+              color='#FFFFFF'
+              background='#3D3D3D'
+              onPress={this.reset}
             />
           </ButtonsRow>
         )}
