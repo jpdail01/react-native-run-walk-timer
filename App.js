@@ -20,32 +20,30 @@ export default class App extends Component {
     this.countUp = this.countUp.bind(this);
 
     this.state = {
-      start: 0,
-      now: 0,
-      runMinutes: 0,
-      runSeconds: 10,
+      runMinutes: 1,
+      runSeconds: 0,
       walkMinutes: 0,
-      walkSeconds: 10,
-      goalMinutes: 1,
+      walkSeconds: 30,
+      goalMinutes: 18,
       goalSeconds: 0,
       segments: [ ],
       currentLabel: 'RUN',
       segmentIndex: 0,
-      countUpTime: {}, 
-      countDownTime: {}, 
+      countUpTime: 0, 
+      countDownTime: 0, 
       secondsUp: 0,
-      secondsDown: 20,
+      secondsDown: 0,
       status: 'stopped',
     };
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerUp);
     clearInterval(this.timerDown);
+    clearInterval(this.timerUp);
   }
 
   componentDidMount(){
-    this.setSegments('Run', 'Minutes', 0);
+    this.setSegments('Run', 'Minutes', 1);
     this.setState({ countDownTime: 0, countUpTime: 0 });
   }
 
@@ -57,6 +55,7 @@ export default class App extends Component {
     if (this.timerDown == 0) {
       this.timerDown = setInterval(this.countDown, 1000);
     }
+
     this.setState({
       status: 'started'
     }, () => {});
@@ -69,11 +68,10 @@ export default class App extends Component {
       secondsUp: seconds,
     });
     
-    // Check if done
     const goal = (this.state.goalMinutes * 60) + this.state.goalSeconds;
     if (seconds === goal) { 
       clearInterval(this.timerUp);
-      this.timerUp = 0;
+      // this.timerUp = 0;
 
       Alert.alert(
         'Workout Complete!',
@@ -91,16 +89,15 @@ export default class App extends Component {
   }
 
   countDown() {
-    let seconds = this.state.secondsDown - 1;    
-
+    let seconds = this.state.secondsDown - 1;
     this.setState({
       countDownTime: this.secondsToTime(seconds),
       secondsDown: seconds,
     });
 
-    if (seconds == 0) { 
+    if (seconds === 0) { 
       clearInterval(this.timerDown);
-      //clearInterval(this.timerUp);
+      clearInterval(this.timerUp);
 
       this.setState({
         segmentIndex: this.state.segmentIndex + 1
@@ -111,14 +108,14 @@ export default class App extends Component {
       }
 
       this.state.currentLabel === 'WALK' 
-      ? 
-      this.setState({
-        currentLabel: 'RUN',
-      }, () => {}) 
-      : 
-      this.setState({
-        currentLabel: 'WALK',
-      }, () => {});
+        ? 
+        this.setState({
+          currentLabel: 'RUN',
+        }, () => {}) 
+        : 
+        this.setState({
+          currentLabel: 'WALK',
+        }, () => {});
     
       seconds = this.state.segments[this.state.segmentIndex];
       this.setState({
@@ -127,7 +124,7 @@ export default class App extends Component {
       });
 
       this.timerDown = setInterval(this.countDown, 1000);
-      //this.timerUp = setInterval(this.countUp, 1000);
+      this.timerUp = setInterval(this.countUp, 1000);
     }
   }
 
@@ -149,8 +146,8 @@ export default class App extends Component {
   }
 
   setSegments = (type, value, duration) => {
+    clearInterval(this.timerDown);
     clearInterval(this.timerUp);
-    clearInterval(this.timerdown);
 
     if(type === 'Total Workout') type = 'goal';
     this.setState({
@@ -158,7 +155,7 @@ export default class App extends Component {
     }, () => {});
 
     const { 
-      segments, runMinutes, runSeconds, walkMinutes, walkSeconds, goalMinutes, goalSeconds 
+      runMinutes, runSeconds, walkMinutes, walkSeconds, goalMinutes, goalSeconds 
     } = this.state;
     const goal = (goalMinutes * 60) + goalSeconds;
     const run = (runMinutes * 60) + runSeconds;
@@ -178,15 +175,13 @@ export default class App extends Component {
         secondsDown: newSegments[0],
         secondsUp: 0,
         segmentIndex: 0,
-        start: 0,
-        now: 0,
         currentLabel: 'RUN',
       }, () => {});
     }
     else {
       Alert.alert(
         'Run/Walk Intervals',
-        'Your Run/Walk Intervals must add up to your Total Workout',
+        'Make sure your intervals add up to your Total Workout',
         [
           {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
           {text: 'OK', onPress: () => console.log('OK Pressed')},
@@ -211,15 +206,13 @@ export default class App extends Component {
 
     this.setState({
       segmentIndex: 0,
-      start: 0,
-      now: 0,
       currentLabel: 'RUN',
-      countUpTime: 0, 
-      countDownTime: 0, 
+      countUpTime: {}, // 0
+      countDownTime: {}, // 0 
       status: 'stopped',
     }, () => {});
 
-    // this.setSegments('Run', 'Minutes', this.state.runMinutes);
+    this.setSegments('Run', 'Minutes', this.state.runMinutes);
   }
   
   resume = () => {
@@ -232,9 +225,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { 
-      now, 
-      start, 
+    const {
       segments,
       runMinutes,
       runSeconds,
@@ -244,8 +235,6 @@ export default class App extends Component {
       goalSeconds,
       segmentIndex,
     } = this.state;
-    const timerUp = now - start;
-    const timerDown = now - start;
 
     return (
       <View style={{ 
