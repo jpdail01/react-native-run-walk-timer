@@ -97,7 +97,7 @@ export default class App extends Component {
 
     if (seconds === 0) { 
       clearInterval(this.timerDown);
-      clearInterval(this.timerUp);
+      // clearInterval(this.timerUp);
 
       this.setState({
         segmentIndex: this.state.segmentIndex + 1
@@ -124,7 +124,7 @@ export default class App extends Component {
       });
 
       this.timerDown = setInterval(this.countDown, 1000);
-      this.timerUp = setInterval(this.countUp, 1000);
+      // this.timerUp = setInterval(this.countUp, 1000);
     }
   }
 
